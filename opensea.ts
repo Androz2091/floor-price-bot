@@ -53,7 +53,9 @@ export default class OpenSeaClient {
             if (isNaN(parseFloat(updatedContent))) return null;
             const parsedContent = updatedContent.includes('K') ? parseFloat(updatedContent) * 1000 : parseFloat(updatedContent);
             return {
-                formatted: parsedContent.toLocaleString(),
+                formatted: parsedContent.toLocaleString('en-US', {
+                    maximumFractionDigits: 2
+                }),
                 num: parseFloat(updatedContent)
             };
         }
