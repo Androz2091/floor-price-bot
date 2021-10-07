@@ -1,8 +1,8 @@
 import { config } from 'dotenv';
 config();
 
-import { Client, Intents, MessageEmbed } from 'discord.js';
-import { connection, Gwei, initialize, SlugSubscription } from './database';
+import { Client, Intents, MessageEmbed, TextChannel } from 'discord.js';
+import { connection, Gwei, GweiStatus, initialize, SlugSubscription } from './database';
 import OpenSeaClient from './opensea';
 import { fetchPrice } from './gas';
 
@@ -17,14 +17,41 @@ initialize();
 client.on('ready', () => {
     console.log(`Ready! Logged in as ${client.user!.tag}!`);
 
-    fetchPrice().then((price) => {
-        client.user?.setActivity(`${price} GWEI`);
-    });
-
-    setInterval(() => {
-        fetchPrice().then((price) => {
+    const synchronizeFetchPrice = () => {
+        fetchPrice().then(async (price) => {
             client.user?.setActivity(`${price} GWEI`);
+
+            const maxGwei = await connection.getRepository(Gwei).findOne();
+            if (!maxGwei) console.log('No max gwei defined...');
+            if (maxGwei) {
+                const gweiStatus = await connection.getRepository(GweiStatus).findOne();
+                if (maxGwei.value > price && gweiStatus?.alreadySent) {
+                    console.log('Max gwei ready to be sent!');
+                    await connection.getRepository(GweiStatus).update({}, {
+                        alreadySent: false
+                    });
+                } else if (maxGwei.value < price && !gweiStatus?.alreadySent) {
+                    console.log('Max gwei ready sent!');
+                    (client.channels.cache.get(process.env.DISCORD_GWEI_NOTIF_CHANNEL_ID!) as TextChannel).send({
+                        content: `@everyone\nMax GWEI (${maxGwei.value}) has been reached! It is now at **${price}**!`
+                    });
+                    if (!gweiStatus) {
+                        await connection.getRepository(GweiStatus).insert({
+                            alreadySent: true
+                        });
+                    } else {
+                        await connection.getRepository(GweiStatus).update({}, {
+                            alreadySent: true
+                        }); 
+                    }
+                }
+            }
         });
+    };
+
+    synchronizeFetchPrice();
+    setInterval(() => {
+        synchronizeFetchPrice();
     }, 30_000);
 });
 

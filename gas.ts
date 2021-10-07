@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const url = 'https://api.etherscan.io/api?module=gastracker&action=gasoracle';
+const url = `https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${process.env.ETHERSCAN_API_KEY}`;
 
 interface APIResult {
     status: string;
