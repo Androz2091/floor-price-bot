@@ -1,3 +1,6 @@
+import { config } from 'dotenv';
+config();
+
 import { Client, Intents, MessageEmbed } from 'discord.js';
 import { connection, Gwei, initialize, SlugSubscription } from './database';
 import OpenSeaClient from './opensea';
@@ -22,6 +25,11 @@ client.on('interactionCreate', async (interaction) => {
 
         interaction.deferReply();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
+        if (slugSubscriptions.length === 0) {
+            return interaction.reply({
+                content: 'You do not have any collections saved in your watch list!'
+            });
+        }
         const floorPrices = new Map();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
             const { floorPrice } = await openSeaClient.getSlugStats(subscription.slug);
@@ -33,7 +41,7 @@ client.on('interactionCreate', async (interaction) => {
             .setDescription(Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
                 return `[${slugName}](https://opensea.io/collections/${slugName}): **${floorPrice}**`;
             }).join('\n'));
-        return interaction.reply({
+        return void interaction.followUp({
             embeds: [embed]
         });
     }
@@ -57,7 +65,7 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 
-    if (interaction.commandName === 'del-slug') {
+    if (interaction.commandName === 'rem-slug') {
         const slug = interaction.options.getString('slug')!;
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         if (slugSubscriptions.some((sub) => sub.slug === slug)) {
@@ -92,3 +100,5 @@ client.on('interactionCreate', async (interaction) => {
     }
 
 });
+
+client.login(process.env.DISCORD_CLIENT_TOKEN);
