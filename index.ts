@@ -4,6 +4,7 @@ config();
 import { Client, Intents, MessageEmbed } from 'discord.js';
 import { connection, Gwei, initialize, SlugSubscription } from './database';
 import OpenSeaClient from './opensea';
+import { fetchPrice } from './gas';
 
 const openSeaClient = new OpenSeaClient();
 
@@ -15,6 +16,16 @@ initialize();
 
 client.on('ready', () => {
     console.log(`Ready! Logged in as ${client.user!.tag}!`);
+
+    fetchPrice().then((price) => {
+        client.user?.setActivity(`${price} GWEI`);
+    });
+
+    setInterval(() => {
+        fetchPrice().then((price) => {
+            client.user?.setActivity(`${price} GWEI`);
+        });
+    }, 30_000);
 });
 
 client.on('interactionCreate', async (interaction) => {
