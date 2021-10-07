@@ -82,18 +82,18 @@ client.on('interactionCreate', async (interaction) => {
                 return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
             }).join('\n'))
             .setColor('DARK_RED')
-            .setFooter('You can add new collections by using /add-slug')
+            .setFooter('You can add new collections by using /add-project')
         return void interaction.followUp({
             embeds: [embed]
         });
     }
 
-    if (interaction.commandName === 'add-slug') {
-        const slug = interaction.options.getString('slug')!;
+    if (interaction.commandName === 'add-project') {
+        const slug = interaction.options.getString('project')!;
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         if (slugSubscriptions.some((sub) => sub.slug === slug)) {
             return interaction.reply({
-                content: 'This slug is already in your watch list! ⚠️'
+                content: 'This project is already in your watch list! ⚠️'
             });
         } else {
             await connection.getRepository(SlugSubscription).insert({
@@ -102,24 +102,24 @@ client.on('interactionCreate', async (interaction) => {
                 createdAt: new Date()
             });
             return interaction.reply({
-                content: 'This slug has been added to your watch list! ✅'
+                content: 'This project has been added to your watch list! ✅'
             });
         }
     }
 
-    if (interaction.commandName === 'rem-slug') {
-        const slug = interaction.options.getString('slug')!;
+    if (interaction.commandName === 'rem-project') {
+        const slug = interaction.options.getString('project')!;
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         if (!slugSubscriptions.some((sub) => sub.slug === slug)) {
             return interaction.reply({
-                content: 'This slug is not in your watch list! ⚠️'
+                content: 'This project is not in your watch list! ⚠️'
             });
         } else {
             await connection.getRepository(SlugSubscription).delete({
                 slug
             });
             return interaction.reply({
-                content: 'This slug has been removed from your watch list! ✅'
+                content: 'This project has been removed from your watch list! ✅'
             });
         }
     }

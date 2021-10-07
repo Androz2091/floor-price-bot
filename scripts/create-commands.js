@@ -6,27 +6,27 @@ const { Routes, ApplicationCommandOptionType } = require('discord-api-types/v9')
 
 const commands = [{
     name: 'floor-price',
-    description: 'Gets the floor price of the saved slugs from OpenSea!'
+    description: 'Gets the floor price of the saved projects from OpenSea!'
 },
 {
-    name: 'add-slug',
-    description: 'Adds a slug to your watch list (used for the /floor-price command)',
+    name: 'add-project',
+    description: 'Adds a project to your watch list (used for the /floor-price command)',
     options: [
         {
-            name: 'slug',
-            description: 'The slug to add to the watch list',
+            name: 'project',
+            description: 'The project to add to the watch list',
             type: ApplicationCommandOptionType.String,
             required: true
         }
     ]
 },
 {
-    name: 'rem-slug',
-    description: 'Removes a slug from your watch list (used for the /floor-price command)',
+    name: 'rem-project',
+    description: 'Removes a project from your watch list (used for the /floor-price command)',
     options: [
         {
-            name: 'slug',
-            description: 'The slug to remove from the watch list',
+            name: 'project',
+            description: 'The project to remove from the watch list',
             type: ApplicationCommandOptionType.String,
             required: true
         }
