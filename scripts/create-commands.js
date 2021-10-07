@@ -15,7 +15,8 @@ const commands = [{
         {
             name: 'slug',
             description: 'The slug to add to the watch list',
-            type: ApplicationCommandOptionType.String
+            type: ApplicationCommandOptionType.String,
+            required: true
         }
     ]
 },
@@ -26,7 +27,8 @@ const commands = [{
         {
             name: 'slug',
             description: 'The slug to remove from the watch list',
-            type: ApplicationCommandOptionType.String
+            type: ApplicationCommandOptionType.String,
+            required: true
         }
     ]
 },
@@ -37,7 +39,8 @@ const commands = [{
         {
             name: 'gwei',
             description: 'The new max gwei',
-            type: ApplicationCommandOptionType.Integer
+            type: ApplicationCommandOptionType.Integer,
+            required: true
         }
     ]
 }];

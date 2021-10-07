@@ -5,6 +5,7 @@ import { Client, Intents, MessageEmbed, TextChannel } from 'discord.js';
 import { connection, Gwei, GweiStatus, initialize, SlugSubscription } from './database';
 import OpenSeaClient from './opensea';
 import { fetchPrice } from './gas';
+import { fetchFloorPrice } from './cryptopunk';
 
 const openSeaClient = new OpenSeaClient();
 
@@ -69,6 +70,7 @@ client.on('interactionCreate', async (interaction) => {
             });
         }
         const floorPrices = new Map();
+        const cryptoPunk = await fetchFloorPrice();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
             const { floorPrice } = await openSeaClient.getSlugStats(subscription.slug);
             floorPrices.set(subscription.slug, floorPrice);
@@ -76,8 +78,8 @@ client.on('interactionCreate', async (interaction) => {
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
-            .setDescription(Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
-                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}** ETH`;
+            .setDescription(`[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
+                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
             }).join('\n'))
             .setColor('DARK_RED')
             .setFooter('You can add new collections by using /add-slug')
@@ -135,7 +137,7 @@ client.on('interactionCreate', async (interaction) => {
             });
         }
         return interaction.reply({
-            content: `Max gwei for Etherum has been set to **${gwei} gwei**!`
+            content: `Max gwei for Ethereum has been set to **${gwei} gwei**!`
         });
     }
 
