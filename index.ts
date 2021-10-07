@@ -26,7 +26,7 @@ client.on('interactionCreate', async (interaction) => {
         interaction.deferReply();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         if (slugSubscriptions.length === 0) {
-            return interaction.reply({
+            return void interaction.followUp({
                 content: 'You do not have any collections saved in your watch list!'
             });
         }
@@ -39,8 +39,10 @@ client.on('interactionCreate', async (interaction) => {
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
             .setDescription(Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
-                return `[${slugName}](https://opensea.io/collections/${slugName}): **${floorPrice}**`;
-            }).join('\n'));
+                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}** ETH`;
+            }).join('\n'))
+            .setColor('DARK_RED')
+            .setFooter('You can add new collections by using /add-slug')
         return void interaction.followUp({
             embeds: [embed]
         });
@@ -54,10 +56,10 @@ client.on('interactionCreate', async (interaction) => {
                 content: 'This slug is already in your watch list! ⚠️'
             });
         } else {
-            await connection.getRepository(SlugSubscription).create({
+            await connection.getRepository(SlugSubscription).insert({
                 slug,
                 discordUserId: interaction.user.id,
-                createdAt: Date.now()
+                createdAt: new Date()
             });
             return interaction.reply({
                 content: 'This slug has been added to your watch list! ✅'
@@ -86,7 +88,7 @@ client.on('interactionCreate', async (interaction) => {
         const gwei = interaction.options.getInteger('gwei')!;
         const currentGwei = await connection.getRepository(Gwei).find();
         if (currentGwei.length === 0) {
-            await connection.getRepository(Gwei).create({
+            await connection.getRepository(Gwei).insert({
                 value: gwei
             });
         } else {
