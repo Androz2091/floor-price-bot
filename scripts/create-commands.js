@@ -25,7 +25,7 @@ const commands = [{
     options: [
         {
             name: 'slug',
-            description: 'The slug to add to the watch list',
+            description: 'The slug to remove from the watch list',
             type: ApplicationCommandOptionType.String
         }
     ]

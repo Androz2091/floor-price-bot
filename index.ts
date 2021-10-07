@@ -70,7 +70,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'rem-slug') {
         const slug = interaction.options.getString('slug')!;
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
-        if (slugSubscriptions.some((sub) => sub.slug === slug)) {
+        if (!slugSubscriptions.some((sub) => sub.slug === slug)) {
             return interaction.reply({
                 content: 'This slug is not in your watch list! ⚠️'
             });
