@@ -64,11 +64,6 @@ client.on('interactionCreate', async (interaction) => {
 
         interaction.deferReply();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
-        if (slugSubscriptions.length === 0) {
-            return void interaction.followUp({
-                content: 'You do not have any collections saved in your watch list!'
-            });
-        }
         const floorPrices = new Map();
         const cryptoPunk = await fetchFloorPrice();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
