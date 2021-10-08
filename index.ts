@@ -4,7 +4,7 @@ config();
 import { Client, Intents, MessageEmbed, TextChannel } from 'discord.js';
 import { connection, Gwei, GweiStatus, initialize, SlugSubscription } from './database';
 import OpenSeaClient from './opensea';
-import { fetchPrice } from './gas';
+import { fetchLastPrice, fetchGasPrice } from './ethereum';
 import { fetchFloorPrice } from './cryptopunk';
 
 const openSeaClient = new OpenSeaClient();
@@ -19,7 +19,7 @@ client.on('ready', () => {
     console.log(`Ready! Logged in as ${client.user!.tag}!`);
 
     const synchronizeFetchPrice = () => {
-        fetchPrice().then(async (price) => {
+        fetchGasPrice().then(async (price) => {
             client.user?.setActivity(`${price} GWEI`);
 
             const maxGwei = await connection.getRepository(Gwei).findOne();
@@ -63,7 +63,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'floor-price') {
 
         interaction.deferReply();
-        const price = await fetchPrice();
+        const price = await fetchLastPrice();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         const floorPrices = new Map();
         const cryptoPunk = await fetchFloorPrice();
@@ -74,7 +74,7 @@ client.on('interactionCreate', async (interaction) => {
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
-            .setDescription(`🔴 Live ETHER price: **${price}Ξ**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
+            .setDescription(`🔴 Live ETHER price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
                 return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
             }).join('\n'))
             .setColor('DARK_RED')
