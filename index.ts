@@ -65,16 +65,19 @@ client.on('interactionCreate', async (interaction) => {
         interaction.deferReply();
         const price = await fetchLastPrice();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
-        const floorPrices = new Map();
+        const floorPrices = new Map<string, { floorPrice?: string; floorPriceNum?: number }>();
         const cryptoPunk = await fetchFloorPrice();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
-            const { floorPrice } = await openSeaClient.getSlugStats(subscription.slug);
-            floorPrices.set(subscription.slug, floorPrice);
+            const { floorPrice, floorPriceNum } = await openSeaClient.getSlugStats(subscription.slug);
+            floorPrices.set(subscription.slug, {
+                floorPrice,
+                floorPriceNum
+            });
         });
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
-            .setDescription(`🔴 Live ETHER price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
+            .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1].floorPriceNum! - a[1].floorPriceNum!).map(([ slugName, { floorPrice } ]) => {
                 return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
             }).join('\n'))
             .setColor('DARK_RED')
