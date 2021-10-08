@@ -63,6 +63,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'floor-price') {
 
         interaction.deferReply();
+        const price = await fetchPrice();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         const floorPrices = new Map();
         const cryptoPunk = await fetchFloorPrice();
@@ -73,7 +74,7 @@ client.on('interactionCreate', async (interaction) => {
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
-            .setDescription(`[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
+            .setDescription(`🔴 Live ETHER price: **${price}Ξ**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).map(([ slugName, floorPrice ]) => {
                 return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
             }).join('\n'))
             .setColor('DARK_RED')
