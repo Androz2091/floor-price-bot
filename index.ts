@@ -3,11 +3,9 @@ config();
 
 import { Client, Intents, MessageEmbed, TextChannel } from 'discord.js';
 import { connection, Gwei, GweiStatus, initialize, SlugSubscription } from './database';
-import OpenSeaClient from './opensea';
+import { getCollectionStats } from './opensea';
 import { fetchLastPrice, fetchGasPrice } from './ethereum';
 import { fetchFloorPrice } from './cryptopunk';
-
-const openSeaClient = new OpenSeaClient();
 
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
@@ -65,19 +63,16 @@ client.on('interactionCreate', async (interaction) => {
         interaction.deferReply();
         const price = await fetchLastPrice();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
-        const floorPrices = new Map<string, { floorPrice?: string; floorPriceNum?: number }>();
+        const floorPrices = new Map<string, number>();
         const cryptoPunk = await fetchFloorPrice();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
-            const { floorPrice, floorPriceNum } = await openSeaClient.getSlugStats(subscription.slug);
-            floorPrices.set(subscription.slug, {
-                floorPrice,
-                floorPriceNum
-            });
+            const stats = await getCollectionStats(subscription.slug);
+            floorPrices.set(subscription.slug, stats.collection.stats.floor_price);
         });
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
-            .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1].floorPriceNum! - a[1].floorPriceNum!).map(([ slugName, { floorPrice } ]) => {
+            .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1] - a[1]).map(([ slugName, floorPrice ]) => {
                 return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
             }).join('\n'))
             .setColor('DARK_RED')
