@@ -8,7 +8,7 @@ export const initialize = () => createConnection({
     database: process.env.PG_DATABASE_NAME,
     username: process.env.PG_DATABASE_USERNAME,
     password: process.env.PG_DATABASE_PASSWORD,
-    entities: [SlugSubscription, Gwei, GweiStatus],
+    entities: [SlugSubscription, Gwei, GweiStatus, LastSavedPrice],
     synchronize: process.env.ENVIRONMENT === 'development',
 }).then((createdConnection) => connection = createdConnection);
 
@@ -55,4 +55,27 @@ export class GweiStatus {
         default: false
     })
     alreadySent!: boolean;
+}
+
+@Entity()
+export class LastSavedPrice {
+
+    @PrimaryGeneratedColumn()
+    id!: number;
+
+    @Column({
+        unique: true
+    })
+    slug!: string;
+
+    @Column({
+        type: 'double precision'
+    })
+    price!: number;
+
+    @Column({
+        type: 'timestamp with time zone'
+    })
+    lastSaved!: Date;
+
 }

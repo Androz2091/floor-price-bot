@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 config();
 
 import { Client, Intents, MessageEmbed, TextChannel } from 'discord.js';
-import { connection, Gwei, GweiStatus, initialize, SlugSubscription } from './database';
+import { connection, Gwei, GweiStatus, initialize, LastSavedPrice, SlugSubscription } from './database';
 import { getCollectionStats } from './opensea';
 import { fetchLastPrice, fetchGasPrice } from './ethereum';
 import { fetchFloorPrice } from './cryptopunk';
@@ -63,17 +63,40 @@ client.on('interactionCreate', async (interaction) => {
         interaction.deferReply();
         const price = await fetchLastPrice();
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
-        const floorPrices = new Map<string, number>();
+        const floorPrices = new Map<string, { floorPrice: number; difference?: number; }>();
         const cryptoPunk = await fetchFloorPrice();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
             const stats = await getCollectionStats(subscription.slug);
             floorPrices.set(subscription.slug, stats.collection.stats.floor_price);
+            const previousFloorPrice = await connection.getRepository(LastSavedPrice).findOne({
+                where: {
+                    slug: subscription.slug
+                }
+            });
+            if (previousFloorPrice) {
+                await connection.getRepository(LastSavedPrice).update({
+                    slug: subscription.slug
+                }, {
+                    price: stats.collection.stats.floor_price as number,
+                    lastSaved: new Date()
+                });
+            } else {
+                await connection.getRepository(LastSavedPrice).insert({
+                    slug: subscription.slug,
+                    lastSaved: new Date(),
+                    price: stats.collection.stats.floor_price as number
+                });
+            }
+            floorPrices.set(subscription.slug, {
+                floorPrice: stats.collection.stats.floor_price,
+                difference: previousFloorPrice ? (stats.collection.stats.floor_price - previousFloorPrice.price) * 100 : undefined
+            });
         });
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
-            .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1] - a[1]).map(([ slugName, floorPrice ]) => {
-                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ**`;
+            .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1].floorPrice - a[1].floorPrice).map(([ slugName, { floorPrice, difference } ]) => {
+                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ** ${difference ? `(**${difference > 0 ? `+${difference}` : `${-1 * difference!}`}**%)` : ''}`;
             }).join('\n'))
             .setColor('DARK_RED')
             .setFooter('You can add new collections by using /add-project')
