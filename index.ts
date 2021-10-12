@@ -96,7 +96,7 @@ client.on('interactionCreate', async (interaction) => {
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
             .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1].floorPrice - a[1].floorPrice).map(([ slugName, { floorPrice, difference } ]) => {
-                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice}Ξ** ${difference ? `(**${difference > 0 ? `+${difference}` : `${-1 * difference!}`}**%)` : ''}`;
+                return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice.toFixed(2)}Ξ** ${difference ? `(**${difference > 0 ? `+${difference.toFixed(0)}` : `${(-1 * difference).toFixed(0)!}`}**%)` : ''}`;
             }).join('\n'))
             .setColor('DARK_RED')
             .setFooter('You can add new collections by using /add-project')
