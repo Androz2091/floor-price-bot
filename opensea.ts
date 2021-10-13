@@ -37,6 +37,11 @@ export class OpenSeaClient {
             .then(() => {
                 page.waitForTimeout(5)
                     .then(async () => {
+                        page.on('console', consoleMessageObject => function (consoleMessageObject: any) {
+                            if (consoleMessageObject._type !== 'warning') {
+                                console.debug(consoleMessageObject._text)
+                            }
+                        });
                         const floorPrice = await page.evaluate(async () => {
                             const cardsNodeList = document.querySelectorAll(".Asset--anchor .AssetCardFooter--price-amount");
                             const cardsArray = Array.prototype.slice.call(cardsNodeList); // you cannot use .map on a nodeList, we need to transform it to an array
