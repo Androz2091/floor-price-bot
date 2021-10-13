@@ -64,6 +64,7 @@ export class OpenSeaClient {
                             // sometimes the order of elements is not accurate on Opensea,
                             // thats why we need to minimize get the lowest value
                             // IMPORTANT: spread operator is needed for Math.min() to work with arrays
+                            console.log(floorPrices);
                             return Math.min(...floorPrices as number[]);
                         });
                         page.close();
