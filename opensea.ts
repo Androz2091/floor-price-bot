@@ -10,8 +10,8 @@ puppeteer.use(StealthPlugin())
 const limit = pRateLimit({
     interval: 200, 
     rate: 1,
-    concurrency: 1, 
-    maxDelay: 2000
+    concurrency: 2,
+    maxDelay: 15_000
 });
 
 export class OpenSeaClient {
@@ -65,7 +65,9 @@ export class OpenSeaClient {
                         resolve(floorPrice || await this.floorPriceAPI(slug));
                     })
             })
-            .catch(async () => {
+            .catch(async (e) => {
+                console.log('THE FOLLOWING ERROR WAS HANDLED ✅')
+                console.error(e);
                 resolve(await this.floorPriceAPI(slug));
             });
         });
