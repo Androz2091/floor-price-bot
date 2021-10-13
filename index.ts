@@ -63,7 +63,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'floor-price') {
 
         interaction.deferReply();
-        const price = await fetchLastPrice();
+        const price = await fetchLastPrice() || 0;
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         const floorPrices = new Map<string, { floorPrice: number; difference?: number; }>();
         const cryptoPunk = await fetchFloorPrice();

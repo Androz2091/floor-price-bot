@@ -30,37 +30,43 @@ export class OpenSeaClient {
         });
     }
 
-    async floorPrice(slug: string) {
-        const page = await this.browser!.newPage();
-        await page.goto(`https://opensea.io/collection/${slug}?search[sortAscending]=true&search[sortBy]=PRICE&search[toggles][0]=BUY_NOW`);
-        await page.waitForTimeout(5);
-    
-        const floorPrice = await page.evaluate(async () => {
-            const cardsNodeList = document.querySelectorAll(".Asset--anchor .AssetCardFooter--price-amount");
-            const cardsArray = Array.prototype.slice.call(cardsNodeList); // you cannot use .map on a nodeList, we need to transform it to an array
-            const floorPrices = cardsArray.map(card => {
-                try {
-                    // only fetch price in ETH
-                    if (!card.querySelector(".Price--eth-icon")) {
+    floorPrice(slug: string): Promise<number> {
+        return new Promise(async (resolve) => {
+            const page = await this.browser!.newPage();
+            await page.goto(`https://opensea.io/collection/${slug}?search[sortAscending]=true&search[sortBy]=PRICE&search[toggles][0]=BUY_NOW`);
+            page.waitForTimeout(5)
+            .then(async () => {
+                const floorPrice = await page.evaluate(async () => {
+                    const cardsNodeList = document.querySelectorAll(".Asset--anchor .AssetCardFooter--price-amount");
+                    const cardsArray = Array.prototype.slice.call(cardsNodeList); // you cannot use .map on a nodeList, we need to transform it to an array
+                    const floorPrices = cardsArray.map(card => {
+                        try {
+                            // only fetch price in ETH
+                            if (!card.querySelector(".Price--eth-icon")) {
+                                return undefined;
+                            }
+                            const priceStr = card.querySelector(".Price--amount").textContent;
+                            return Number(priceStr.split(",").join("."));
+                        } catch(err) {
+                            return undefined;
+                        }
+                    }).filter(val => val); // filter out invalid (undefined) values
+                    // if no ETH price is found, return undefined
+                    if (floorPrices.length === 0) {
                         return undefined;
                     }
-                    const priceStr = card.querySelector(".Price--amount").textContent;
-                    return Number(priceStr.split(",").join("."));
-                } catch(err) {
-                    return undefined;
-                }
-            }).filter(val => val); // filter out invalid (undefined) values
-            // if no ETH price is found, return undefined
-            if (floorPrices.length === 0) {
-                return undefined;
-            }
-            // sometimes the order of elements is not accurate on Opensea,
-            // thats why we need to minimize get the lowest value
-            // IMPORTANT: spread operator is needed for Math.min() to work with arrays
-            return Math.min(...floorPrices as number[]);
+                    // sometimes the order of elements is not accurate on Opensea,
+                    // thats why we need to minimize get the lowest value
+                    // IMPORTANT: spread operator is needed for Math.min() to work with arrays
+                    return Math.min(...floorPrices as number[]);
+                });
+                page.close();
+                resolve(floorPrice || await this.floorPriceAPI(slug));
+            })
+            .catch(async () => {
+                resolve(await this.floorPriceAPI(slug));
+            });
         });
-        page.close();
-        return floorPrice || await this.floorPriceAPI(slug);
     }
 
     async floorPriceAPI (slug: string): Promise<number> {

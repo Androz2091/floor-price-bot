@@ -38,8 +38,12 @@ interface LastPriceAPIResult {
 
 export const fetchLastPrice = async () => {
 
-    const { result } = await (await fetch(lastPriceURL)).json() as LastPriceAPIResult;
-    const lastPrice = parseInt(result['ethusd']);
-    return lastPrice;
+    try  {
+        const { result } = await (await fetch(lastPriceURL)).json() as LastPriceAPIResult;
+        const lastPrice = parseInt(result['ethusd']);
+        return lastPrice;
+    } catch (e) {
+        return undefined;
+    } 
 
 };
