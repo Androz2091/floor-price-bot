@@ -37,10 +37,8 @@ export class OpenSeaClient {
             .then(() => {
                 page.waitForTimeout(5)
                     .then(async () => {
-                        page.on('console', consoleMessageObject => function (consoleMessageObject: any) {
-                            if (consoleMessageObject._type !== 'warning') {
-                                console.debug(consoleMessageObject._text)
-                            }
+                        page.on('console', consoleMessageObject => {
+                            if (consoleMessageObject.type() !== 'warning') console.log(consoleMessageObject.text());
                         });
                         const floorPrice = await page.evaluate(async () => {
                             const cardsNodeList = document.querySelectorAll(".Asset--anchor .AssetCardFooter--price-amount");
