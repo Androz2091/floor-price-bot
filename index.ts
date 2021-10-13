@@ -3,18 +3,20 @@ config();
 
 import { Client, Intents, MessageEmbed, TextChannel } from 'discord.js';
 import { connection, Gwei, GweiStatus, initialize, LastSavedPrice, SlugSubscription } from './database';
-import { getCollectionStats } from './opensea';
+import { OpenSeaClient } from './opensea';
 import { fetchLastPrice, fetchGasPrice } from './ethereum';
 import { fetchFloorPrice } from './cryptopunk';
+
+const openseaClient = new OpenSeaClient();
 
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
 });
 
-initialize();
-
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`Ready! Logged in as ${client.user!.tag}!`);
+
+    await initialize();
 
     const synchronizeFetchPrice = () => {
         fetchGasPrice().then(async (price) => {
@@ -48,7 +50,7 @@ client.on('ready', () => {
         });
     };
 
-    synchronizeFetchPrice();
+    setTimeout(() => synchronizeFetchPrice(), 1000);
     setInterval(() => {
         synchronizeFetchPrice();
     }, 30_000);
@@ -66,8 +68,7 @@ client.on('interactionCreate', async (interaction) => {
         const floorPrices = new Map<string, { floorPrice: number; difference?: number; }>();
         const cryptoPunk = await fetchFloorPrice();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
-            const stats = await getCollectionStats(subscription.slug);
-            floorPrices.set(subscription.slug, stats.collection.stats.floor_price);
+            const floorPrice = await openseaClient.floorPrice(subscription.slug);
             const previousFloorPrice = await connection.getRepository(LastSavedPrice).findOne({
                 where: {
                     slug: subscription.slug
@@ -77,19 +78,19 @@ client.on('interactionCreate', async (interaction) => {
                 await connection.getRepository(LastSavedPrice).update({
                     slug: subscription.slug
                 }, {
-                    price: stats.collection.stats.floor_price as number,
+                    price: floorPrice as number,
                     lastSaved: new Date()
                 });
             } else {
                 await connection.getRepository(LastSavedPrice).insert({
                     slug: subscription.slug,
                     lastSaved: new Date(),
-                    price: stats.collection.stats.floor_price as number
+                    price: floorPrice as number
                 });
             }
             floorPrices.set(subscription.slug, {
-                floorPrice: stats.collection.stats.floor_price,
-                difference: previousFloorPrice ? (stats.collection.stats.floor_price - previousFloorPrice.price) * 100 : undefined
+                floorPrice: floorPrice,
+                difference: previousFloorPrice ? (floorPrice - previousFloorPrice.price) * 100 : undefined
             });
         });
         await Promise.all(floorPricesPromises);

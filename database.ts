@@ -2,7 +2,7 @@ import { Entity, Column, createConnection, Connection, PrimaryGeneratedColumn } 
 
 export let connection: Connection;
 
-export const initialize = () => createConnection({
+export const initialize = async () => createConnection({
     type: 'postgres',
     host: 'localhost',
     database: process.env.PG_DATABASE_NAME,
@@ -10,7 +10,10 @@ export const initialize = () => createConnection({
     password: process.env.PG_DATABASE_PASSWORD,
     entities: [SlugSubscription, Gwei, GweiStatus, LastSavedPrice],
     synchronize: process.env.ENVIRONMENT === 'development',
-}).then((createdConnection) => connection = createdConnection);
+}).then((createdConnection) => {
+    connection = createdConnection
+    return;
+});
 
 @Entity()
 export class SlugSubscription {
