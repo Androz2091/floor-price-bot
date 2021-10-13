@@ -44,16 +44,21 @@ export class OpenSeaClient {
                                 try {
                                     // only fetch price in ETH
                                     if (!card.querySelector(".Price--eth-icon")) {
+                                        console.log('Icon ether is not here');
                                         return undefined;
                                     }
                                     const priceStr = card.querySelector(".Price--amount").textContent;
+                                    console.log('Price str is not here');
                                     return Number(priceStr.split(",").join("."));
                                 } catch(err) {
+                                    console.log(`The following error will be handled`);
+                                    console.error(err);
                                     return undefined;
                                 }
                             }).filter(val => val); // filter out invalid (undefined) values
                             // if no ETH price is found, return undefined
                             if (floorPrices.length === 0) {
+                                console.log('No ether price found');
                                 return undefined;
                             }
                             // sometimes the order of elements is not accurate on Opensea,
