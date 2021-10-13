@@ -90,7 +90,7 @@ client.on('interactionCreate', async (interaction) => {
             }
             floorPrices.set(subscription.slug, {
                 floorPrice: floorPrice,
-                difference: previousFloorPrice ? (floorPrice - previousFloorPrice.price) * 100 : undefined
+                difference: previousFloorPrice ? ((floorPrice - previousFloorPrice.price) / previousFloorPrice.price) * 100 : undefined
             });
         });
         await Promise.all(floorPricesPromises);
