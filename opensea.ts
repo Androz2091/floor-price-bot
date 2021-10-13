@@ -42,14 +42,11 @@ export class OpenSeaClient {
                 try {
                     // only fetch price in ETH
                     if (!card.querySelector(".Price--eth-icon")) {
-                        page.close();
                         return undefined;
                     }
                     const priceStr = card.querySelector(".Price--amount").textContent;
-                    page.close();
                     return Number(priceStr.split(",").join("."));
                 } catch(err) {
-                    page.close();
                     return undefined;
                 }
             }).filter(val => val); // filter out invalid (undefined) values
