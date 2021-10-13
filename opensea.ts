@@ -40,10 +40,11 @@ export class OpenSeaClient {
                         page.on('console', consoleMessageObject => {
                             if (consoleMessageObject.type() !== 'warning') console.log(consoleMessageObject.text());
                         });
+                        require('fs').writeFileSync('./out.html', await page.content());
                         const floorPrice = await page.evaluate(async () => {
                             const cardsNodeList = document.querySelectorAll(".Asset--anchor .AssetCardFooter--price-amount");
                             const cardsArray = Array.prototype.slice.call(cardsNodeList); // you cannot use .map on a nodeList, we need to transform it to an array
-                            console.log(cardsNodeList)
+                            console.log(cardsArray.length + ' cards found');
                             const floorPrices = cardsArray.map(card => {
                                 try {
                                     // only fetch price in ETH
