@@ -74,6 +74,7 @@ export class OpenSeaClient {
     }
 
     async floorPriceAPI (slug: string): Promise<number> {
+        console.log(`Api fetch for ${slug}`);
         return limit(() => fetch(`https://api.opensea.io/collection/${slug}`).then((res) => {
             return res.json().then((data) => {
                 return data.collection ? data.collection.stats.floor_price : 0;

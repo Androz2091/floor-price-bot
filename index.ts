@@ -74,6 +74,7 @@ client.on('interactionCreate', async (interaction) => {
                     slug: subscription.slug
                 }
             });
+            console.log(`Floor Price: ${floorPrice}, Previous: ${previousFloorPrice}`);
             if (previousFloorPrice) {
                 await connection.getRepository(LastSavedPrice).update({
                     slug: subscription.slug
