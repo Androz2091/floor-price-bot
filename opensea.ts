@@ -35,7 +35,7 @@ export class OpenSeaClient {
             const page = await this.browser!.newPage();
             page.goto(`https://opensea.io/collection/${slug}?search[sortAscending]=true&search[sortBy]=PRICE&search[toggles][0]=BUY_NOW`)
             .then(() => {
-                page.waitForTimeout(5)
+                page.waitForTimeout(7)
                     .then(async () => {
                         page.on('console', consoleMessageObject => {
                             if (consoleMessageObject.type() !== 'warning') console.log(consoleMessageObject.text());
