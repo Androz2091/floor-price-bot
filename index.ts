@@ -63,12 +63,10 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'floor-price') {
 
         interaction.deferReply();
-        let [price, cryptoPunk] = await Promise.all([
+        let otherFetchPromises = Promise.all([
             fetchLastPrice(),
             fetchFloorPrice()
         ]);
-        if (!price) price = 0;
-        if (!cryptoPunk) cryptoPunk = 'N/A';
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         const floorPrices = new Map<string, { floorPrice: number; difference?: number; }>();
         const previousFloorPrices = await connection.getRepository(LastSavedPrice).find();
@@ -95,6 +93,9 @@ client.on('interactionCreate', async (interaction) => {
                 difference: previousFloorPrice ? ((floorPrice - previousFloorPrice.price) / previousFloorPrice.price) * 100 : undefined
             });
         });
+        let [price, cryptoPunk] = await otherFetchPromises;
+        if (!price) price = 0;
+        if (!cryptoPunk) cryptoPunk = 'N/A';
         await Promise.all(floorPricesPromises);
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
