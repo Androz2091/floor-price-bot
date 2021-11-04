@@ -8,7 +8,7 @@ export class OpenSeaClient {
 
     async floorPrice (slug: string): Promise<number> {
         console.log(`Api fetch for ${slug}`);
-        return fetch(`https://api.opensea.io/api/v1/collection/${slug}`, {
+        return fetch(`https://api.opensea.io/api/v1/collection/${slug}/stats`, {
             agent: new HttpsProxyAgent(process.env.PROXY_URL!)
         }).then((res) => {
             return res.json().then((data) => {
