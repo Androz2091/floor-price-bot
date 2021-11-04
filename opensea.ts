@@ -18,7 +18,8 @@ export class OpenSeaClient {
 		        console.log(`Floor price is ${data.stats.floor_price}`)
                 return data.stats ? data.stats.floor_price : 0;
             });
-        }).catch(() => {
+        }).catch((e) => {
+            console.log(e);
             if (this.attemptsBeforeSuccess.has(slug)) {
                 if (this.attemptsBeforeSuccess.get(slug)! > 5) {
                     console.log(`Failed to fetch ${slug} after 5 attempts`);
