@@ -12,7 +12,7 @@ export class OpenSeaClient {
             agent: new HttpsProxyAgent(process.env.PROXY_URL!)
         }).then((res) => {
             return res.json().then((data) => {
-		console.log(`Floor price is ${data.stats.floor_price}`)
+		        console.log(`Floor price is ${data.stats.floor_price}`)
                 return data.stats ? data.stats.floor_price : 0;
             });
         });

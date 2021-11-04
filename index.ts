@@ -63,27 +63,28 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'floor-price') {
 
         interaction.deferReply();
-        const price = await fetchLastPrice() || 0;
+        let [price, cryptoPunk] = await Promise.all([
+            fetchLastPrice(),
+            fetchFloorPrice()
+        ]);
+        if (!price) price = 0;
+        if (!cryptoPunk) cryptoPunk = 'N/A';
         const slugSubscriptions = await connection.getRepository(SlugSubscription).find();
         const floorPrices = new Map<string, { floorPrice: number; difference?: number; }>();
-        const cryptoPunk = await fetchFloorPrice();
+        const previousFloorPrices = await connection.getRepository(LastSavedPrice).find();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
             const floorPrice = await openseaClient.floorPrice(subscription.slug);
-            const previousFloorPrice = await connection.getRepository(LastSavedPrice).findOne({
-                where: {
-                    slug: subscription.slug
-                }
-            });
+            const previousFloorPrice = previousFloorPrices.find((previousFloorPrice) => previousFloorPrice.slug === subscription.slug);
             console.log(`Floor Price: ${floorPrice}, Previous: ${previousFloorPrice}`);
             if (previousFloorPrice) {
-                await connection.getRepository(LastSavedPrice).update({
+                connection.getRepository(LastSavedPrice).update({
                     slug: subscription.slug
                 }, {
                     price: floorPrice as number,
                     lastSaved: new Date()
                 });
             } else {
-                await connection.getRepository(LastSavedPrice).insert({
+                connection.getRepository(LastSavedPrice).insert({
                     slug: subscription.slug,
                     lastSaved: new Date(),
                     price: floorPrice as number
