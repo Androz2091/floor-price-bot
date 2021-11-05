@@ -61,8 +61,8 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'floor-price') {
-
         interaction.deferReply();
+        const startAt = Date.now();
         let otherFetchPromises = Promise.all([
             fetchLastPrice(),
             fetchFloorPrice()
@@ -97,13 +97,14 @@ client.on('interactionCreate', async (interaction) => {
         if (!price) price = 0;
         if (!cryptoPunk) cryptoPunk = 'N/A';
         await Promise.all(floorPricesPromises);
+        const fetchTime = Date.now() - startAt;
         const embed = new MessageEmbed()
             .setAuthor('Floor Prices 📈')
             .setDescription(`🔴 Live ETH price: **$${price}**\n\n[crypto-punks](https://www.larvalabs.com/cryptopunks/forsale): **${cryptoPunk}**\n` + Array.from(floorPrices.entries()).sort((a, b) => b[1].floorPrice - a[1].floorPrice).map(([ slugName, { floorPrice, difference } ]) => {
                 return `[${slugName}](https://opensea.io/collection/${slugName}): **${floorPrice.toFixed(2)}Ξ** ${difference ? `(**${difference > 0 ? `+${difference.toFixed(0)}**%` : `-${(-1 * difference).toFixed(0)!}**%`})` : ''}`;
             }).join('\n'))
             .setColor('DARK_RED')
-            .setFooter('You can add new collections by using /add-project')
+            .setFooter(`Fetch: ${Math.floor(fetchTime / 1000)}s | You can add new collections by using /add-project`)
         return void interaction.followUp({
             embeds: [embed]
         });
