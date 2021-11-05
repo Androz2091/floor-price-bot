@@ -71,7 +71,7 @@ client.on('interactionCreate', async (interaction) => {
         const floorPrices = new Map<string, { floorPrice: number; difference?: number; }>();
         const previousFloorPrices = await connection.getRepository(LastSavedPrice).find();
         const floorPricesPromises = slugSubscriptions.map(async (subscription) => {
-            const floorPrice = await openseaClient.floorPrice(subscription.slug);
+            const floorPrice = await openseaClient.floorPrice(subscription.slug, true);
             const previousFloorPrice = previousFloorPrices.find((previousFloorPrice) => previousFloorPrice.slug === subscription.slug);
             console.log(`Floor Price: ${floorPrice}, Previous: ${previousFloorPrice}`);
             if (previousFloorPrice) {
