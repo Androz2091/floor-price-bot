@@ -5,18 +5,17 @@
   },
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
-    "@types/jsdom": "^16.2.13",
-    "@types/node-fetch": "2",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.2.0",
     "dotenv": "^10.0.0",
     "https-proxy-agent": "^5.0.0",
     "jsdom": "^17.0.0",
-    "node-fetch": "2",
-    "p-ratelimit": "^1.0.1",
+    "node-fetch": "^2.6.6",
     "pg": "^8.7.1",
-    "puppeteer-extra": "^3.2.3",
-    "puppeteer-extra-plugin-stealth": "^2.8.2",
     "typeorm": "^0.2.38"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^16.2.13",
+    "@types/node-fetch": "^2.5.12"
   }
 }
