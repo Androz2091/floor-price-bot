@@ -11,7 +11,7 @@ export class OpenSeaClient {
 
     async floorPrice (slug: string, proxy?: boolean): Promise<number> {
         const controller = new AbortController();
-        setTimeout(() => controller.abort(), 5000);
+        setTimeout(() => controller.abort(), 7000);
         console.log(`Api fetch for ${slug}`);
         return fetch(`https://api.opensea.io/api/v1/collection/${slug}/stats`, {
             agent: proxy ? new HttpsProxyAgent(process.env.PROXY_URL!) : undefined,
